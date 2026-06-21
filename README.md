@@ -5,6 +5,11 @@ The patches are generated from C++ code that is compiled into a portable raw bin
 It works on KenjiNX, Ryubing and real hardware
 
 credits:
+
 jabonchan: main developer
+
 mariowo: developer & research
+
 steam_deb: tester
+
+creator of the libraries on dep.ts
