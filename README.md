@@ -17,7 +17,7 @@ And based on the results we can say that it works on ``Ryubing``, ``KenjiNX`` (A
 
 ## Usage
 
-For detailed step‑by‑step instructions, please see the **[Guide.MD](Guide.MD)**.
+For detailed step‑by‑step instructions, please see the **[Guide.md](./Guide.md)**.
 
 **Quick start:**
 1. Place your patch files (`patch.sectext` and `patch.nsotext`) into `UDXPatcher/patch`.
