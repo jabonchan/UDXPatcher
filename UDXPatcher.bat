@@ -2,7 +2,6 @@
 
 CD %~dp0
 
-Deno run -A mod.ts ./source/exefs/main NULL NULL NULL NULL NULL NULL
+deno run -A mod.ts --no-gui --output ./output --main ./source/exefs/main
 
-Pause
 Exit /b
