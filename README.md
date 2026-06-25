@@ -1,5 +1,5 @@
 # UDXPatcher
-A TypeScript tool for patching and injecting code into the **New Super Mario Bros. U Deluxe** ``main`` NSO.
+A TypeScript tool for patching and injecting code into the **New Super Mario Bros. U Deluxe v1.0.0** ``main`` NSO.
 
 The patches are generated from C++ code that is compiled into a portable raw binary of code by [**UDXCompiler**](https://github.com/jabonchan/UDXCompiler). Work in progress. Most tests have been with Ryubing and real hardware.
 
