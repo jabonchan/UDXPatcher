@@ -1,0 +1,307 @@
+body {
+    background-color: rgb(49, 57, 59);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-weight: lighter;
+    color: white;
+}
+
+h1, h2, h3 {
+    text-align: center;
+}
+
+.discord-field {
+    width: 100%;
+    margin-bottom: 16px;
+
+    color: #dbdee1;
+
+    font-family:
+        "gg sans",
+        "Noto Sans",
+        Arial,
+        sans-serif;
+}
+
+.discord-row {
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+
+    background: #1e1f22;
+
+    border-radius: 8px;
+
+    padding: 10px 12px;
+
+    border: 1px solid #2b2d31;
+
+    transition:
+        border-color .15s ease,
+        background .15s ease;
+}
+
+
+.discord-row:hover {
+    border-color: #404249;
+    background: #232428;
+}
+
+
+.discord-value {
+    flex: 1;
+    min-width: 0;
+
+    color: #dbdee1;
+
+    font-size: 14px;
+
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+
+/* New box containing "FieldName + Button" */
+.discord-action-box {
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+
+    background: #2b2d31;
+
+    padding: 4px 6px 4px 12px;
+
+    border-radius: 6px;
+}
+
+
+.discord-action-label {
+    color: #b5bac1;
+
+    font-size: 13px;
+
+    font-weight: 600;
+}
+
+
+.discord-button {
+    border: none;
+
+    background: #5865f2;
+
+    color: white;
+
+    font-weight: 600;
+    font-size: 14px;
+
+    padding: 8px 14px;
+
+    border-radius: 6px;
+
+    cursor: pointer;
+
+    transition:
+        background .15s ease,
+        transform .1s ease;
+}
+
+.discord-button-big {
+    border: none;
+    background: #5865f2;
+
+    color: white;
+    font-weight: 600;
+    font-size: 30px;
+
+    padding: 25px 60px;
+    min-width: 300px;
+
+    border-radius: 15px;
+    cursor: pointer;
+
+    transition:
+        background .15s ease,
+        transform .1s ease;
+}
+
+button {
+    white-space: nowrap;
+}
+
+div {
+    gap: 10px;
+}
+
+body {
+    background-color: rgb(49, 57, 59);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-weight: lighter;
+    color: white;
+}
+
+h1, h2, h3 {
+    text-align: center;
+}
+
+.discord-field {
+    width: 100%;
+    margin-bottom: 16px;
+
+    color: #dbdee1;
+
+    font-family:
+        "gg sans",
+        "Noto Sans",
+        Arial,
+        sans-serif;
+}
+
+.discord-row {
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+
+    background: #1e1f22;
+
+    border-radius: 8px;
+
+    padding: 10px 12px;
+
+    border: 1px solid #2b2d31;
+
+    transition:
+        border-color .15s ease,
+        background .15s ease;
+}
+
+
+.discord-row:hover {
+    border-color: #404249;
+    background: #232428;
+}
+
+
+.discord-value {
+    flex: 1;
+    min-width: 0;
+
+    color: #dbdee1;
+
+    font-size: 14px;
+
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+
+/* New box containing "FieldName + Button" */
+.discord-action-box {
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+
+    background: #2b2d31;
+
+    padding: 4px 6px 4px 12px;
+
+    border-radius: 6px;
+}
+
+
+.discord-action-label {
+    color: #b5bac1;
+
+    font-size: 13px;
+
+    font-weight: 600;
+}
+
+
+.discord-button {
+    border: none;
+
+    background: #5865f2;
+
+    color: white;
+
+    font-weight: 600;
+    font-size: 14px;
+
+    padding: 8px 14px;
+
+    border-radius: 6px;
+
+    cursor: pointer;
+
+    transition:
+        background .15s ease,
+        transform .1s ease;
+}
+
+.discord-button-big {
+    border: none;
+    background: #5865f2;
+
+    color: white;
+    font-weight: 600;
+    font-size: 30px;
+
+    padding: 25px 60px;
+    min-width: 300px;
+
+    border-radius: 15px;
+    cursor: pointer;
+
+    transition:
+        background .15s ease,
+        transform .1s ease;
+}
+
+button {
+    white-space: nowrap;
+    transition:
+        background .2s ease,
+        transform .15s ease,
+        filter .2s ease,
+        box-shadow .35s ease;
+}
+
+div {
+    gap: 10px;
+}
+
+/* Hover = slightly darker */
+button:hover {
+    filter: brightness(0.85);
+}
+
+/* Click = scale + white flash */
+button:active {
+    transform: scale(.96);
+    animation: buttonFlash .15s ease;
+}
+
+
+@keyframes buttonFlash {
+    0% {
+        filter: brightness(1);
+        box-shadow: 0 0 0 rgba(255,255,255,0);
+    }
+
+    35% {
+        filter: brightness(2);
+        box-shadow:
+            0 0 25px rgba(255,255,255,.9),
+            0 0 60px rgba(255,255,255,.5);
+    }
+
+    100% {
+        filter: brightness(1);
+        box-shadow: 0 0 0 rgba(255,255,255,0);
+    }
+}

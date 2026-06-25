@@ -32,7 +32,7 @@ export async function parseNSO0(data: Uint8Array) {
     const header = unpackNSO0Header(data);
     const expectedLength = header.DataFileOffset + header.DataFileSize;
 
-    if (data.length < expectedLength) throw new Error("[parseNSO0]: NSO body is too small, corrupted NSO?");
+    if (data.length < expectedLength) throw new Error("NSO body is too small, corrupted NSO?");
 
     nso0.version = header.Version;
     nso0.flags = parseFlags(header.Flags);
@@ -65,7 +65,7 @@ export async function parseNSO0(data: Uint8Array) {
     nso0.hash.ro = hashy.parseSHA256(header.RoHash);
     nso0.hash.data = hashy.parseSHA256(header.DataHash);
 
-    if (nso0.flags.UseZbicCompression) throw new Error("[parseNSO0]: Unsupported zstd-based compression");
+    if (nso0.flags.UseZbicCompression) throw new Error("Unsupported zstd-based compression");
 
     nso0.sections.text.raw = data.slice(header.TextFileOffset, header.TextFileOffset + header.TextFileSize);
     nso0.sections.ro.raw = data.slice(header.RoFileOffset, header.RoFileOffset + header.RoFileSize);
@@ -81,9 +81,9 @@ export async function parseNSO0(data: Uint8Array) {
     const actualRoHash = await hashy.calculateSHA256(nso0.sections.ro.decompressed);
     const actualDataHash = await hashy.calculateSHA256(nso0.sections.data.decompressed);
 
-    if (actualTextHash.hex !== nso0.hash.text.hex) throw new Error("[parseNSO0]: Text section hashes don't match, corrupted .text section?");
-    if (actualRoHash.hex !== nso0.hash.ro.hex) throw new Error("[parseNSO0]: Ro section hashes don't match, corrupted .ro section?");
-    if (actualDataHash.hex !== nso0.hash.data.hex) throw new Error("[parseNSO0]: Data section hashes don't match, corrupted .data section?");
+    if (actualTextHash.hex !== nso0.hash.text.hex) throw new Error("Text section hashes don't match, corrupted .text section?");
+    if (actualRoHash.hex !== nso0.hash.ro.hex) throw new Error("RO section hashes don't match, corrupted .ro section?");
+    if (actualDataHash.hex !== nso0.hash.data.hex) throw new Error("Data section hashes don't match, corrupted .data section?");
 
     return nso0;
 }

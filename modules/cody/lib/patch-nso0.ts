@@ -14,7 +14,7 @@ export function patchNSO0(nso0: filetendo.SourceNSO0, patch: string, section: ".
         for (let i = 0; i < patch.code.length; i++) {
             const targetAddress = patch.address + i;
 
-            if (targetAddress > targetSection.length) throw new Error(`[patchNSO0]: ${section}: 0x${targetAddress.toString(16).toUpperCase().padStart(8, "0")} is out of bounds`);
+            if (targetAddress > targetSection.length) throw new Error(`${section} is invalid, wrong patch?`);
 
             targetSection[targetAddress] = patch.code[i];
         }

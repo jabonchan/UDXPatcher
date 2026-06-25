@@ -1,178 +1,232 @@
-import { ParsedNSO0, SourceNSO0 } from "./modules/filetendo/lib/nso0/types.ts";
-import { outputArgs } from "./modules/clii/mod.ts";
+import { NuclearServer } from "./modules/nuclearserve/lib/class/nuclear-server.ts";
+import { isFile } from "./lib/is-file.ts";
+import { isDir } from "./lib/is-dir.ts";
 import { way } from "./deps.ts";
 
 import * as filetendo from "./modules/filetendo/mod.ts";
 import * as cody from "./modules/cody/mod.ts";
-import * as clii from "./modules/clii/mod.ts";
 
-if (outputArgs.debug) {
-    console.log(`
+type paths = ".sectext" | ".secro" | ".secdata" | ".nsotext" | ".nsoro" | ".nsodata" | "main" | "output" | "romfs";
+type patches = ".nsotext" | ".nsoro" | ".nsodata";
+type sections = ".sectext" | ".secro" | ".secdata";
+
+let mode: "hardware" | "emulator" = "hardware";
+let debug: boolean = false;
+
+const tid = "0100ea80032ea000";
+const pathsType = [ ".sectext", ".secro",  ".secdata", ".nsotext", ".nsoro", ".nsodata", "main", "output", "romfs" ] as paths[];
+const sectionsType = [ ".sectext", ".secro", ".secdata" ] as sections[];
+const patchesType = [ ".nsotext", ".nsoro", ".nsodata" ] as patches[];
+const patchesObj: Record<patches, string | null> = { ".nsotext": null, ".nsoro": null, ".nsodata": null };
+const pathsObj: Record<Exclude<paths, patches>, string | null> = {
+    ".sectext": null,
+    ".secro": null,
+    ".secdata": null,
+
+    "main": null,
+    "output": null,
+    "romfs": null
+}
+
+new NuclearServer({
+    assets: way.join(import.meta.dirname ?? "./", "./assets/web")
+}, {
+    onError(err: unknown) {
+        console.error(err);
+        Deno.exit(1);
+    },
+
+    onRequest() {
+        return null;
+    },
+
+    onAPI: {
+        "set-debug": function setDebug(call) {
+            const flag = !!call.body.json;
+
+            if (isFile("./debug")) return { body: "Can't use debug as a directory", status: 400 };
+
+            debug = flag;
+            return { body: null, status: 200 };
+        },
+
+        "set-mode": function setMode(call) {
+            if (call.body.json !== "hardware" && call.body.json !== "emulator") {
+                return {
+                    body: "Invalid output mode",
+                    status: 400
+                }
+            }
+
+            mode = call.body.json;
+
+            return {
+                body: null,
+                status: 200
+            }
+        },
+
+        "set-path": function filePath(call) {
+            const entry = call.body.json;
+
+            console.log(entry);
+            if (entry === null || typeof entry !== "object" || !("type" in entry) || !("path" in entry) || typeof entry.path !== "string" || typeof entry.type !== "string" || !pathsType.includes(entry.type as paths)) {
+                return {
+                    body: "Invalid path",
+                    status: 400
+                }
+            }
+
+            const type = entry.type as paths;
+
+            try {
+                if (type.startsWith(".nso")) { // it means is .nsotext, .nsoro or .nsodata
+                    if (!patchesType.includes(type as patches)) throw new Error("Invalid path");
+
+                    const source = Deno.readTextFileSync(entry.path);
+                    cody.nsopatchParser(source);
+
+                    patchesObj[type as patches] = source;
+
+                    return {
+                        body: null,
+                        status: 200
+                    }
+                }
+
+                if (type === "main") {
+                    if (!isFile(entry.path)) throw new Error("Invalid path");
+
+                    pathsObj.main = entry.path;
+
+                    return {
+                        body: null,
+                        status: 200
+                    }
+                }
+
+                if (type.startsWith(".sec")) { // it means is .sectext, .secro or .secdata
+                    if (!sectionsType.includes(type as sections) || !isFile(entry.path)) throw new Error("Invalid path");
+                    pathsObj[type as sections] = entry.path;
+
+                    return {
+                        body: null,
+                        status: 200
+                    }
+                }
+
+
+                if (type === "output") {
+                    if (!isDir(entry.path) ||
+                        isFile(way.join(entry.path, "./atmosphere/contents")) ||
+                        isFile(way.join(entry.path, "./atmosphere/contents", tid)) ||
+                        isFile(way.join(entry.path, "./atmosphere/contents", tid, "./exefs")) ||
+                        isDir(way.join(entry.path, "./atmosphere/contents", tid, "./exefs/main")) ||
+
+                        isFile(way.join(entry.path, "./mods")) ||
+                        isFile(way.join(entry.path, "./mods/contents")) ||
+                        isFile(way.join(entry.path, "./mods/contents", tid)) ||
+                        isFile(way.join(entry.path, "./mods/contents", tid, "./New Super Mario Bros. U - UDXPatch")) ||
+                        isFile(way.join(entry.path, "./mods/contents", tid, "./New Super Mario Bros. U - UDXPatch/exefs")) ||
+                        isDir(way.join(entry.path, "./mods/contents", tid, "./New Super Mario Bros. U - UDXPatch/exefs/main"))) {
+                            throw new Error("Invalid path");
+                        }
+
+                    pathsObj.output = entry.path;
+
+                    return {
+                        body: null,
+                        status: 200
+                    }
+                }
+
+                if (type === "romfs") {
+                    if (isFile(entry.path) || !isDir(entry.path)) throw new Error("Invalid path");
+                    pathsObj.romfs = entry.path;
+
+                    return {
+                        body: null,
+                        status: 200
+                    }
+                }
+
+                throw new Error("Invalid path");
+            } catch(e: unknown) {
+                return {
+                    body: (e as Error).message,
+                    status: 400
+                }
+            }
+        },
+
+        async compile() {
+            try {
+                if (!pathsObj.main || !pathsObj.output) throw new Error("Missing required fields");
+
+                const parsedNSO0 = await filetendo.parseNSO0(await Deno.readFile(pathsObj.main));
+                const sourceNSO0 = filetendo.convertParsedNSO0ToSourceNSO0(parsedNSO0);
+
+                if (debug) {
+                    if (isDir("./debug")) await Deno.remove("./debug", { recursive: true });
+                    await Deno.mkdir("./debug");
+
+                    await Deno.writeFile("./debug/text.bin", sourceNSO0.sections.text);
+                    await Deno.writeFile("./debug/ro.bin", sourceNSO0.sections.ro);
+                    await Deno.writeFile("./debug/data.bin", sourceNSO0.sections.data);
+                }
+
+                if (pathsObj[".sectext"]) cody.extpatchNSO0(sourceNSO0, await Deno.readFile(pathsObj[".sectext"]), ".text");
+                if (pathsObj[".secro"]) cody.extpatchNSO0(sourceNSO0, await Deno.readFile(pathsObj[".secro"]), ".ro");
+                if (pathsObj[".secdata"]) cody.extpatchNSO0(sourceNSO0, await Deno.readFile(pathsObj[".secdata"]), ".data");
+                
+                if (patchesObj[".nsotext"]) cody.patchNSO0(sourceNSO0, patchesObj[".nsotext"], ".text");
+                if (patchesObj[".nsodata"]) cody.patchNSO0(sourceNSO0, patchesObj[".nsodata"], ".data");
+                if (patchesObj[".nsoro"]) cody.patchNSO0(sourceNSO0, patchesObj[".nsoro"], ".ro");
+
+                if (debug) {
+                    await Deno.writeFile("./debug/text-patched.bin", sourceNSO0.sections.text);
+                    await Deno.writeFile("./debug/ro-patched.bin", sourceNSO0.sections.ro);
+                    await Deno.writeFile("./debug/data-patched.bin", sourceNSO0.sections.data);
+                }
+                
+                const encodedNSO0 = await filetendo.craftNSO0(sourceNSO0);
+
+                await Deno.mkdir(mode === "hardware" ?
+                    way.join(pathsObj.output, "./atmosphere/contents/", tid, "./exefs") :
+                    way.join(pathsObj.output, "./mods/contents/", tid, "./New Super Mario Bros. U - UDXPatch/exefs"),
+                    { recursive: true }
+                )
+                
+                await Deno.writeFile(mode === "hardware" ?
+                    way.join(pathsObj.output, "./atmosphere/contents", tid, "./exefs/main",) :
+                    way.join(pathsObj.output, "./mods/contents", tid, "./New Super Mario Bros. U - UDXPatch/exefs/main"),
+                    encodedNSO0
+                )
+
+                if (pathsObj.romfs) await Deno.rename(pathsObj.romfs,
+                    mode === "hardware" ?
+                        way.join(pathsObj.output, "./atmosphere/contents", tid, "./exefs/romfs") :
+                        way.join(pathsObj.output, "./mods/contents", tid, "./New Super Mario Bros. U - UDXPatch/exefs/romfs")
+                )
+
+                return { body: null, status: 200 };
+            } catch(e: unknown) {
+                return {
+                    body: (e as Error).message,
+                    status: 400
+                }
+            }
+        }
+    },
+
+    onListen(addr) {
+        console.log("Listening on", addr);
+
+        const worker = new Worker("file://" + way.join(import.meta.dirname ?? Deno.cwd(), "./assets/worker/main.ts"), { type: "module" });
         
-        CWD: ${way.cwd()}  
-        Extracted: ${way.join(way.cwd(), "./extracted")}  
-
-    `)
-
-    try {
-        await Deno.mkdir("./extracted/", { recursive: true });
-
-        await Deno.writeFile("./extracted/text.bin", new Uint8Array([ 1 ]));
-        await Deno.writeFile("./extracted/ro.bin", new Uint8Array([ 1 ]));
-        await Deno.writeFile("./extracted/data.bin", new Uint8Array([ 1 ]));
-        
-        await Deno.writeFile("./extracted/text-patched.bin", new Uint8Array([ 1 ]));
-        await Deno.writeFile("./extracted/ro-patched.bin", new Uint8Array([ 1 ]));
-        await Deno.writeFile("./extracted/data-patched.bin", new Uint8Array([ 1 ]));
-    } catch {
-        console.error(`
-
-            Error: Failed to setup debug enviroment
-
-        `);
+        worker.onmessage = (ev) => {
+            if (ev.data === "Ready") worker.postMessage(`http://${addr.hostname}:${addr.port}`);
+            else Deno.exit(0);
+        }
     }
-}
-
-let data: Uint8Array<ArrayBuffer> = new Uint8Array();   // @ts-ignore .
-let parsedNSO0: ParsedNSO0 = {};                        // @ts-ignore .
-let sourceNSO0: SourceNSO0 = {};
-let encodedNSO0: Uint8Array = new Uint8Array();
-
-try {
-    data = await Deno.readFile(outputArgs.main!);
-    parsedNSO0 = await filetendo.parseNSO0(data);
-    sourceNSO0 = filetendo.convertParsedNSO0ToSourceNSO0(parsedNSO0);
-} catch {
-    if (outputArgs.noGUI) {
-        console.error(`
-
-            Error: Invalid NSO file
-
-        `)
-    } else {
-        clii.MessageBox("error", "UDXPatcher", "Invalid NSO file")
-    }
-
-    Deno.exit(2);
-}
-
-if (outputArgs.debug) {
-    console.log(`
-        
-        Printing NSO information:
-
-    `)
-
-    console.log(parsedNSO0);
-
-    await Deno.writeFile("./extracted/text.bin", parsedNSO0.sections.text.decompressed);
-    await Deno.writeFile("./extracted/ro.bin", parsedNSO0.sections.ro.decompressed);
-    await Deno.writeFile("./extracted/data.bin", parsedNSO0.sections.data.decompressed);
-
-    console.log(`
-        
-        Stored source sections
-
-    `)
-}
-
-if (outputArgs.textSection) {
-    if (outputArgs.debug) console.log("Loaded text section patch");
-
-    const patch = await Deno.readFile(outputArgs.textSection);
-    cody.extpatchNSO0(sourceNSO0, patch, ".text");
-}
-
-if (outputArgs.roSection) {
-    if (outputArgs.debug) console.log("Loaded ro section patch");
-
-    const patch = await Deno.readFile(outputArgs.roSection);
-    cody.extpatchNSO0(sourceNSO0, patch, ".ro");
-}
-
-if (outputArgs.dataSection) {
-    if (outputArgs.debug) console.log("Loaded data section patch");
-
-    const patch = await Deno.readFile(outputArgs.dataSection);
-    cody.extpatchNSO0(sourceNSO0, patch, ".data");
-}
-
-try {
-    if (outputArgs.textPatch) {
-        const patch = await Deno.readTextFile(outputArgs.textPatch);
-        cody.patchNSO0(sourceNSO0, patch, ".text");
-
-        if (outputArgs.debug) console.log("Loaded text patch");
-    }
-    
-    if (outputArgs.roPatch) {
-        const patch = await Deno.readTextFile(outputArgs.roPatch);
-        cody.patchNSO0(sourceNSO0, patch, ".ro");
-
-        if (outputArgs.debug) console.log("Loaded ro patch");
-    }
-    
-    if (outputArgs.dataPatch) {
-        const patch = await Deno.readTextFile(outputArgs.dataPatch);
-        cody.patchNSO0(sourceNSO0, patch, ".data");
-
-        if (outputArgs.debug) console.log("Loaded datapatch");
-    }
-} catch {
-    if (outputArgs.debug) {
-        console.error(`
-        
-            One or more patches have syntax errors
-            
-        `);
-        Deno.exit(3);
-    }
-
-    clii.MessageBox("error", "UDXPatcher", "One or more patches have syntax errors");
-    Deno.exit(3);
-}
-
-if (outputArgs.debug) {
-    await Deno.writeFile("./extracted/text-patched.bin", sourceNSO0.sections.text);
-    await Deno.writeFile("./extracted/ro-patched.bin", sourceNSO0.sections.ro);
-    await Deno.writeFile("./extracted/data-patched.bin", sourceNSO0.sections.data);
-
-    console.log(`
-        
-        Stored patched sections
-
-    `)
-}
-
-try {
-    encodedNSO0 = await filetendo.craftNSO0(sourceNSO0);
-
-    await Deno.writeFile(clii.outputFileA, encodedNSO0);
-    await Deno.writeFile(clii.outputFileB, encodedNSO0);
-
-    if (outputArgs.noGUI) {
-        if (outputArgs.debug) console.log(`
-        
-            Successfully created patched NSO
-
-        `)
-
-        Deno.exit(0);
-    }
-
-    clii.MessageBox("ok", "UDXPatcher", "Successfully created patched NSO");
-    Deno.exit(0);
-} catch {
-    if (outputArgs.noGUI) {
-        if (outputArgs.debug) console.log(`
-        
-            Error: Failed to create patched NSO
-
-        `)
-
-        Deno.exit(4);
-    }
-
-    clii.MessageBox("error", "UDXPatcher", "Failed to create patched NSO");
-    Deno.exit(4);
-}
+})

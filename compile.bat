@@ -2,6 +2,6 @@
 
 CD %~dp0
 
-deno compile -A mod.ts
+deno compile --include ./assets -A mod.ts
 
 Exit /b

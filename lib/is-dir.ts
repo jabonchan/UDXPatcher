@@ -1,6 +1,6 @@
 import { way } from "../deps.ts";
 
-export function isFile(path: string) {
+export function isDir(path: string) {
     path = way.normalize(path);
 
     if (way.isRelative(path)) {
@@ -8,7 +8,7 @@ export function isFile(path: string) {
     }
 
     try {
-        return Deno.statSync(path).isFile;
+        return Deno.statSync(path).isDirectory;
     } catch {
         return false;
     }
