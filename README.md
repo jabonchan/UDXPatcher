@@ -1,7 +1,7 @@
 # UDXPatcher
 A TypeScript tool for patching and injecting code into the **New Super Mario Bros. U Deluxe v1.0.0** ``main`` NSO.
 
-The patches are generated from C++ code that is compiled into a portable raw binary of code by [**UDXCompiler**](https://github.com/jabonchan/UDXCompiler). Work in progress. Most tests have been with Ryubing and real hardware.
+The patches are generated from C++ code that is compiled into a portable raw binary of code by [**UDXCompiler**](https://github.com/jabonchan/UDXCompiler).
 
 ## Compatibility
 
@@ -13,19 +13,12 @@ Currently patched NSOs have been tested on:
 - Eden
 - Real Hardware
 
-And based on the results we can say that it works on ``Ryubing``, ``KenjiNX`` (And likely other ``Ryujinx`` based emulators) and ``Real Hardware``. ``yuzu`` based emulators (like ``eden``) have issues running custom NSOs, and randomly crash. This is an emulator problem.
+## BUILDING
 
-## Usage
-
-For detailed step‑by‑step instructions, please see the **[Guide.md](./Guide.md)**.
-
-**Quick start:**
-1. Place your patch files (`patch.sectext` and `patch.nsotext`) into `UDXPatcher/patch`.
-2. Place the game's `main` executable (extracted from the `exefs` of *New Super Mario Bros. U Deluxe*) into `UDXPatcher/source/exefs/(Your Original main)`.
-3. Run `UDXPatcher.exe` – a terminal window will appear, show progress, and close when finished.
-4. The patched `main` will be generated at `UDXPatcher/NSMBUDXMOD/exefs/(The New Patched main)`.
-
-That patched file can then be used with emulators or on real hardware via LayeredFS (see the guide for details).
+Have `deno` in `PATH`, place `Ninpatch-Native.dll` from [**Ninpatch-Native**](https://github.com/jabonchan/Ninpatch-Native) inside `./assets/` then run
+```
+compile.bat
+```
 
 ## CREDITS:
 
@@ -34,5 +27,6 @@ That patched file can then be used with emulators or on real hardware via Layere
 [**Steam_DuB**](https://github.com/Steammaker212)**:** Tester
 
 *Dependency:* [**Ninpatch-Native**](https://github.com/jabonchan/Ninpatch-Native) by [**jabonchan**](https://github.com/jabonchan) - Licensed under **MIT** <br />
+*Dependency:* [**deno_webview**](https://github.com/webview/webview_deno) by [**Deno_WebView Team**](https://github.com/webview) - Licensed under **MIT** <br />
 *Dependency:* [**lz4**](https://github.com/lz4/lz4) by [**lz4 Team**](https://github.com/lz4) - Licensed under **BSD 2-Clause**  (see LZ4_LICENSE) <br />
 *Dependency:* [**deno**](https://github.com/denoland/deno) by [**Deno Team**](https://github.com/denoland) - Licensed under **MIT**  <br />
