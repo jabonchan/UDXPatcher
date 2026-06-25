@@ -33,6 +33,6 @@ That patched file can then be used with emulators or on real hardware via Layere
 [**Mario Possamato**](https://github.com/mariopossamato)**:** Developer and researcher <br />
 [**Steam_DuB**](https://github.com/Steammaker212)**:** Tester
 
-*Dependency:* [**deno_lz4**](https://github.com/denosaurs/deno_lz4) by [**denosaurs Team**](https://github.com/denosaurs) - Licensed under **MIT** <br />
+*Dependency:* [**Ninpatch-Native**](https://github.com/jabonchan/Ninpatch-Native) by [**jabonchan**](https://github.com/jabonchan) - Licensed under **MIT** <br />
 *Dependency:* [**lz4**](https://github.com/lz4/lz4) by [**lz4 Team**](https://github.com/lz4) - Licensed under **BSD 2-Clause**  (see LZ4_LICENSE) <br />
 *Dependency:* [**deno**](https://github.com/denoland/deno) by [**Deno Team**](https://github.com/denoland) - Licensed under **MIT**  <br />
